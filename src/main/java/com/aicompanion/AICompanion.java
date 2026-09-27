@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.command.CommandManager;
@@ -61,9 +62,11 @@ public class AICompanion implements ModInitializer {
 
         ServerWorld world = source.getWorld();
 
+        // Create AI Companion
         AICompanionEntity companion =
                 ModEntities.AI_COMPANION.create(
-                        world
+                        world,
+                        SpawnReason.COMMAND
                 );
 
         if (companion == null) {
@@ -76,6 +79,7 @@ public class AICompanion implements ModInitializer {
             return 0;
         }
 
+        // Spawn beside player
         companion.refreshPositionAndAngles(
                 player.getX() + 2,
                 player.getY(),
@@ -84,19 +88,23 @@ public class AICompanion implements ModInitializer {
                 0
         );
 
+        // Name
         companion.setCustomName(
                 Text.literal("AI Companion")
         );
 
         companion.setCustomNameVisible(true);
 
+        // Owner
         companion.setOwner(player);
 
+        // Sword
         companion.equipStack(
                 EquipmentSlot.MAINHAND,
                 new ItemStack(Items.IRON_SWORD)
         );
 
+        // Armor
         companion.equipStack(
                 EquipmentSlot.HEAD,
                 new ItemStack(Items.IRON_HELMET)
@@ -117,8 +125,10 @@ public class AICompanion implements ModInitializer {
                 new ItemStack(Items.IRON_BOOTS)
         );
 
+        // Never despawn
         companion.setPersistent();
 
+        // Add to world
         world.spawnEntity(companion);
 
         source.sendFeedback(
