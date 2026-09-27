@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "aicompanion",
+  "version": "1.0.0",
+  "name": "AI Companion",
+  "description": "AI companion mod for Minecraft",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.aicompanion.AICompanion"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "1.21.11",
+    "java": ">=21"
+  }
+}
