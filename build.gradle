@@ -19,12 +19,10 @@ repositories {
 dependencies {
     minecraft 'com.mojang:minecraft:1.21.11'
     dependencies {
-    minecraft 'com.mojang:minecraft:1.21.11'
-    modImplementation 'net.fabricmc:fabric-loader:0.18.4'
-}   }
+    mappings "net.fabricmc:yarn:1.21.11+build.6:v2"
     modImplementation 'net.fabricmc:fabric-loader:0.18.4'
 }
 
-processResources {
-    inputs.property 'version', project.version
+processResources errsio
+    inputs.property 'version', project.versio.version
 } 
