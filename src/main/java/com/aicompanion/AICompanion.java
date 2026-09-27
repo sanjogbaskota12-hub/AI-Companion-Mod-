@@ -17,6 +17,7 @@ import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -47,140 +48,84 @@ public class AICompanion implements ModInitializer {
                     dispatcher.register(
                             CommandManager.literal("ai")
 
-                                    // /ai spawn
                                     .then(CommandManager.literal("spawn")
                                             .executes(c ->
                                                     spawn(c.getSource())
                                             ))
 
-                                    // /ai follow
                                     .then(CommandManager.literal("follow")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "follow"
-                                                    )
+                                                    setMode(c.getSource(), "follow")
                                             ))
 
-                                    // /ai protect
                                     .then(CommandManager.literal("protect")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "protect"
-                                                    )
+                                                    setMode(c.getSource(), "protect")
                                             ))
 
-                                    // /ai mine
                                     .then(CommandManager.literal("mine")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "mine"
-                                                    )
+                                                    setMode(c.getSource(), "mine")
                                             ))
 
-                                    // /ai gather
                                     .then(CommandManager.literal("gather")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "gather"
-                                                    )
+                                                    setMode(c.getSource(), "gather")
                                             ))
 
-                                    // /ai house
                                     .then(CommandManager.literal("house")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "house"
-                                                    )
+                                                    setMode(c.getSource(), "house")
                                             ))
 
-                                    // /ai castle
                                     .then(CommandManager.literal("castle")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "castle"
-                                                    )
+                                                    setMode(c.getSource(), "castle")
                                             ))
 
-                                    // /ai palace
                                     .then(CommandManager.literal("palace")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "palace"
-                                                    )
+                                                    setMode(c.getSource(), "palace")
                                             ))
 
-                                    // /ai adventure
                                     .then(CommandManager.literal("adventure")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "adventure"
-                                                    )
+                                                    setMode(c.getSource(), "adventure")
                                             ))
 
-                                    // /ai return
                                     .then(CommandManager.literal("return")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "return"
-                                                    )
+                                                    setMode(c.getSource(), "return")
                                             ))
 
-                                    // /ai stop
                                     .then(CommandManager.literal("stop")
                                             .executes(c ->
-                                                    setMode(
-                                                            c.getSource(),
-                                                            "stop"
-                                                    )
+                                                    setMode(c.getSource(), "stop")
                                             ))
 
-                                    // /ai stronghold
                                     .then(CommandManager.literal("stronghold")
                                             .executes(c ->
-                                                    locateStronghold(
-                                                            c.getSource()
-                                                    )
+                                                    locateStronghold(c.getSource())
                                             ))
 
-                                    // /ai end
                                     .then(CommandManager.literal("end")
                                             .executes(c ->
-                                                    locateEndCity(
-                                                            c.getSource()
-                                                    )
+                                                    locateEndCity(c.getSource())
                                             ))
 
-                                    // /ai elytra
                                     .then(CommandManager.literal("elytra")
                                             .executes(c ->
-                                                    locateEndCity(
-                                                            c.getSource()
-                                                    )
+                                                    locateEndCity(c.getSource())
                                             ))
 
-                                    // /ai nether
                                     .then(CommandManager.literal("nether")
                                             .executes(c ->
-                                                    netherInfo(
-                                                            c.getSource()
-                                                    )
+                                                    netherInfo(c.getSource())
                                             ))
 
-                                    // /ai remove
                                     .then(CommandManager.literal("remove")
                                             .executes(c ->
-                                                    remove(
-                                                            c.getSource()
-                                                    )
+                                                    remove(c.getSource())
                                             ))
                     );
                 }
@@ -191,29 +136,20 @@ public class AICompanion implements ModInitializer {
         );
     }
 
-    // =========================================================
-    // SPAWN
-    // =========================================================
+    private static int spawn(ServerCommandSource source) {
 
-    private static int spawn(
-            ServerCommandSource source
-    ) {
-
-        ServerPlayerEntity player =
-                source.getPlayer();
+        ServerPlayerEntity player = source.getPlayer();
 
         if (player == null) {
             return 0;
         }
 
-        ServerWorld world =
-                source.getWorld();
+        ServerWorld world = source.getWorld();
 
-        ZombieEntity ai =
-                EntityType.ZOMBIE.create(
-                        world,
-                        SpawnReason.COMMAND
-                );
+        ZombieEntity ai = EntityType.ZOMBIE.create(
+                world,
+                SpawnReason.COMMAND
+        );
 
         if (ai == null) {
             return 0;
@@ -234,13 +170,11 @@ public class AICompanion implements ModInitializer {
         ai.setCustomNameVisible(true);
         ai.setPersistent();
 
-        // Sword
         ai.equipStack(
                 EquipmentSlot.MAINHAND,
                 new ItemStack(Items.IRON_SWORD)
         );
 
-        // Armor
         ai.equipStack(
                 EquipmentSlot.HEAD,
                 new ItemStack(Items.IRON_HELMET)
@@ -265,65 +199,41 @@ public class AICompanion implements ModInitializer {
 
         UUID id = ai.getUuid();
 
-        OWNERS.put(
-                id,
-                player.getUuid()
-        );
-
-        MODES.put(
-                id,
-                "follow"
-        );
-
-        INVENTORIES.put(
-                id,
-                new SimpleInventory(36)
-        );
+        OWNERS.put(id, player.getUuid());
+        MODES.put(id, "follow");
+        INVENTORIES.put(id, new SimpleInventory(36));
 
         source.sendFeedback(
-                () -> Text.literal(
-                        "§a[AI] Companion spawned!"
-                ),
+                () -> Text.literal("§a[AI] Companion spawned!"),
                 false
         );
 
         return 1;
     }
 
-    // =========================================================
-    // MODE
-    // =========================================================
-
     private static int setMode(
             ServerCommandSource source,
             String mode
     ) {
 
-        ServerPlayerEntity player =
-                source.getPlayer();
+        ServerPlayerEntity player = source.getPlayer();
 
         if (player == null) {
             return 0;
         }
 
-        ZombieEntity ai =
-                findCompanion(player);
+        ZombieEntity ai = findCompanion(player);
 
         if (ai == null) {
 
             source.sendError(
-                    Text.literal(
-                            "§cFirst use /ai spawn"
-                    )
+                    Text.literal("§cFirst use /ai spawn")
             );
 
             return 0;
         }
 
-        MODES.put(
-                ai.getUuid(),
-                mode
-        );
+        MODES.put(ai.getUuid(), mode);
 
         source.sendFeedback(
                 () -> Text.literal(
@@ -335,13 +245,7 @@ public class AICompanion implements ModInitializer {
         return 1;
     }
 
-    // =========================================================
-    // MAIN AI TICK
-    // =========================================================
-
-    private static void tick(
-            ServerWorld world
-    ) {
+    private static void tick(ServerWorld world) {
 
         for (ZombieEntity ai :
                 world.getEntitiesByType(
@@ -357,23 +261,19 @@ public class AICompanion implements ModInitializer {
                 )
         ) {
 
-            UUID id =
-                    ai.getUuid();
+            UUID id = ai.getUuid();
 
-            String mode =
-                    MODES.getOrDefault(
-                            id,
-                            "stop"
-                    );
+            String mode = MODES.getOrDefault(
+                    id,
+                    "stop"
+            );
 
-            ServerPlayerEntity player =
-                    getOwner(ai);
+            ServerPlayerEntity player = getOwner(ai);
 
             if (player == null) {
                 continue;
             }
 
-            // Never attack owner
             if (ai.getTarget() == player) {
                 ai.setTarget(null);
             }
@@ -425,10 +325,6 @@ public class AICompanion implements ModInitializer {
         }
     }
 
-    // =========================================================
-    // FOLLOW
-    // =========================================================
-
     private static void follow(
             ZombieEntity ai,
             ServerPlayerEntity player
@@ -437,10 +333,7 @@ public class AICompanion implements ModInitializer {
         if (ai.distanceTo(player) > 4) {
 
             ai.getNavigation()
-                    .startMovingTo(
-                            player,
-                            1.15
-                    );
+                    .startMovingTo(player, 1.15);
         }
 
         if (ai.distanceTo(player) > 30) {
@@ -453,10 +346,6 @@ public class AICompanion implements ModInitializer {
         }
     }
 
-    // =========================================================
-    // PROTECT
-    // =========================================================
-
     private static void protect(
             ZombieEntity ai,
             ServerPlayerEntity player
@@ -464,27 +353,19 @@ public class AICompanion implements ModInitializer {
 
         if (ai.distanceTo(player) > 10) {
 
-            follow(
-                    ai,
-                    player
-            );
-
+            follow(ai, player);
             return;
         }
 
         Entity closest = null;
-
-        double best =
-                Double.MAX_VALUE;
+        double best = Double.MAX_VALUE;
 
         for (Entity entity :
                 player.getEntityWorld()
                         .getOtherEntities(
                                 player,
-                                player.getBoundingBox()
-                                        .expand(12),
-                                e ->
-                                        e instanceof HostileEntity
+                                player.getBoundingBox().expand(12),
+                                e -> e instanceof HostileEntity
                         )
         ) {
 
@@ -492,11 +373,9 @@ public class AICompanion implements ModInitializer {
                 continue;
             }
 
-            double distance =
-                    ai.distanceTo(entity);
+            double distance = ai.distanceTo(entity);
 
             if (distance < best) {
-
                 best = distance;
                 closest = entity;
             }
@@ -507,25 +386,14 @@ public class AICompanion implements ModInitializer {
             ai.setTarget(enemy);
 
             ai.getNavigation()
-                    .startMovingTo(
-                            enemy,
-                            1.3
-                    );
+                    .startMovingTo(enemy, 1.3);
 
         } else {
 
             ai.setTarget(null);
-
-            follow(
-                    ai,
-                    player
-            );
+            follow(ai, player);
         }
     }
-
-    // =========================================================
-    // MINE
-    // =========================================================
 
     private static void mine(
             ZombieEntity ai,
@@ -533,30 +401,19 @@ public class AICompanion implements ModInitializer {
     ) {
 
         ServerWorld world =
-                (ServerWorld)
-                        ai.getEntityWorld();
+                (ServerWorld) ai.getEntityWorld();
 
         BlockPos target =
-                findOre(
-                        world,
-                        ai.getBlockPos()
-                );
+                findOre(world, ai.getBlockPos());
 
         if (target == null) {
 
-            gather(
-                    ai,
-                    player
-            );
-
+            gather(ai, player);
             return;
         }
 
-        if (
-                ai.getBlockPos()
-                        .getSquaredDistance(target)
-                        > 6
-        ) {
+        if (ai.getBlockPos()
+                .getSquaredDistance(target) > 6) {
 
             ai.getNavigation()
                     .startMovingTo(
@@ -580,15 +437,12 @@ public class AICompanion implements ModInitializer {
         }
 
         SimpleInventory inv =
-                INVENTORIES.get(
-                        ai.getUuid()
-                );
+                INVENTORIES.get(ai.getUuid());
 
         if (inv == null) {
             return;
         }
 
-        // FIXED: no inv.isFull()
         if (hasInventorySpace(inv)) {
 
             inv.addStack(item);
@@ -601,40 +455,24 @@ public class AICompanion implements ModInitializer {
         }
     }
 
-    // =========================================================
-    // ORE SEARCH
-    // =========================================================
-
     private static BlockPos findOre(
             ServerWorld world,
             BlockPos center
     ) {
 
         BlockPos best = null;
-
-        double distance =
-                Double.MAX_VALUE;
+        double distance = Double.MAX_VALUE;
 
         int radius = 12;
 
-        for (int x = -radius;
-             x <= radius;
-             x++) {
+        for (int x = -radius; x <= radius; x++) {
 
-            for (int y = -radius;
-                 y <= radius;
-                 y++) {
+            for (int y = -radius; y <= radius; y++) {
 
-                for (int z = -radius;
-                     z <= radius;
-                     z++) {
+                for (int z = -radius; z <= radius; z++) {
 
                     BlockPos pos =
-                            center.add(
-                                    x,
-                                    y,
-                                    z
-                            );
+                            center.add(x, y, z);
 
                     BlockState state =
                             world.getBlockState(pos);
@@ -644,12 +482,9 @@ public class AICompanion implements ModInitializer {
                     }
 
                     double d =
-                            center.getSquaredDistance(
-                                    pos
-                            );
+                            center.getSquaredDistance(pos);
 
                     if (d < distance) {
-
                         distance = d;
                         best = pos;
                     }
@@ -665,97 +500,53 @@ public class AICompanion implements ModInitializer {
     ) {
 
         return state.isOf(Blocks.IRON_ORE)
-                || state.isOf(
-                        Blocks.DEEPSLATE_IRON_ORE
-                )
+                || state.isOf(Blocks.DEEPSLATE_IRON_ORE)
                 || state.isOf(Blocks.GOLD_ORE)
-                || state.isOf(
-                        Blocks.DEEPSLATE_GOLD_ORE
-                )
+                || state.isOf(Blocks.DEEPSLATE_GOLD_ORE)
                 || state.isOf(Blocks.DIAMOND_ORE)
-                || state.isOf(
-                        Blocks.DEEPSLATE_DIAMOND_ORE
-                )
+                || state.isOf(Blocks.DEEPSLATE_DIAMOND_ORE)
                 || state.isOf(Blocks.COAL_ORE)
-                || state.isOf(
-                        Blocks.DEEPSLATE_COAL_ORE
-                )
+                || state.isOf(Blocks.DEEPSLATE_COAL_ORE)
                 || state.isOf(Blocks.COPPER_ORE)
-                || state.isOf(
-                        Blocks.DEEPSLATE_COPPER_ORE
-                );
+                || state.isOf(Blocks.DEEPSLATE_COPPER_ORE);
     }
 
     private static ItemStack getOreItem(
             BlockState state
     ) {
 
-        if (
-                state.isOf(Blocks.IRON_ORE)
-                        ||
-                state.isOf(
-                        Blocks.DEEPSLATE_IRON_ORE
-                )
-        ) {
-            return new ItemStack(
-                    Items.RAW_IRON
-            );
+        if (state.isOf(Blocks.IRON_ORE)
+                || state.isOf(Blocks.DEEPSLATE_IRON_ORE)) {
+
+            return new ItemStack(Items.RAW_IRON);
         }
 
-        if (
-                state.isOf(Blocks.GOLD_ORE)
-                        ||
-                state.isOf(
-                        Blocks.DEEPSLATE_GOLD_ORE
-                )
-        ) {
-            return new ItemStack(
-                    Items.RAW_GOLD
-            );
+        if (state.isOf(Blocks.GOLD_ORE)
+                || state.isOf(Blocks.DEEPSLATE_GOLD_ORE)) {
+
+            return new ItemStack(Items.RAW_GOLD);
         }
 
-        if (
-                state.isOf(Blocks.DIAMOND_ORE)
-                        ||
-                state.isOf(
-                        Blocks.DEEPSLATE_DIAMOND_ORE
-                )
-        ) {
-            return new ItemStack(
-                    Items.DIAMOND
-            );
+        if (state.isOf(Blocks.DIAMOND_ORE)
+                || state.isOf(Blocks.DEEPSLATE_DIAMOND_ORE)) {
+
+            return new ItemStack(Items.DIAMOND);
         }
 
-        if (
-                state.isOf(Blocks.COAL_ORE)
-                        ||
-                state.isOf(
-                        Blocks.DEEPSLATE_COAL_ORE
-                )
-        ) {
-            return new ItemStack(
-                    Items.COAL
-            );
+        if (state.isOf(Blocks.COAL_ORE)
+                || state.isOf(Blocks.DEEPSLATE_COAL_ORE)) {
+
+            return new ItemStack(Items.COAL);
         }
 
-        if (
-                state.isOf(Blocks.COPPER_ORE)
-                        ||
-                state.isOf(
-                        Blocks.DEEPSLATE_COPPER_ORE
-                )
-        ) {
-            return new ItemStack(
-                    Items.RAW_COPPER
-            );
+        if (state.isOf(Blocks.COPPER_ORE)
+                || state.isOf(Blocks.DEEPSLATE_COPPER_ORE)) {
+
+            return new ItemStack(Items.RAW_COPPER);
         }
 
         return ItemStack.EMPTY;
     }
-
-    // =========================================================
-    // RESOURCE GATHERING
-    // =========================================================
 
     private static void gather(
             ZombieEntity ai,
@@ -763,30 +554,19 @@ public class AICompanion implements ModInitializer {
     ) {
 
         ServerWorld world =
-                (ServerWorld)
-                        ai.getEntityWorld();
+                (ServerWorld) ai.getEntityWorld();
 
         BlockPos target =
-                findResource(
-                        world,
-                        ai.getBlockPos()
-                );
+                findResource(world, ai.getBlockPos());
 
         if (target == null) {
 
-            follow(
-                    ai,
-                    player
-            );
-
+            follow(ai, player);
             return;
         }
 
-        if (
-                ai.getBlockPos()
-                        .getSquaredDistance(target)
-                        > 6
-        ) {
+        if (ai.getBlockPos()
+                .getSquaredDistance(target) > 6) {
 
             ai.getNavigation()
                     .startMovingTo(
@@ -810,15 +590,9 @@ public class AICompanion implements ModInitializer {
         }
 
         SimpleInventory inv =
-                INVENTORIES.get(
-                        ai.getUuid()
-                );
+                INVENTORIES.get(ai.getUuid());
 
-        if (
-                inv != null
-                        &&
-                hasInventorySpace(inv)
-        ) {
+        if (inv != null && hasInventorySpace(inv)) {
 
             inv.addStack(item);
 
@@ -837,54 +611,31 @@ public class AICompanion implements ModInitializer {
 
         int radius = 8;
 
-        for (int x = -radius;
-             x <= radius;
-             x++) {
+        for (int x = -radius; x <= radius; x++) {
 
-            for (int y = -5;
-                 y <= 5;
-                 y++) {
+            for (int y = -5; y <= 5; y++) {
 
-                for (int z = -radius;
-                     z <= radius;
-                     z++) {
+                for (int z = -radius; z <= radius; z++) {
 
                     BlockPos pos =
-                            center.add(
-                                    x,
-                                    y,
-                                    z
-                            );
+                            center.add(x, y, z);
 
                     BlockState state =
                             world.getBlockState(pos);
 
                     if (
-                            state.isOf(
-                                    Blocks.OAK_LOG
-                            )
+                            state.isOf(Blocks.OAK_LOG)
                                     ||
-                            state.isOf(
-                                    Blocks.BIRCH_LOG
-                            )
+                            state.isOf(Blocks.BIRCH_LOG)
                                     ||
-                            state.isOf(
-                                    Blocks.SPRUCE_LOG
-                            )
+                            state.isOf(Blocks.SPRUCE_LOG)
                                     ||
-                            state.isOf(
-                                    Blocks.STONE
-                            )
+                            state.isOf(Blocks.STONE)
                                     ||
-                            state.isOf(
-                                    Blocks.COBBLESTONE
-                            )
+                            state.isOf(Blocks.COBBLESTONE)
                                     ||
-                            state.isOf(
-                                    Blocks.COAL_ORE
-                            )
+                            state.isOf(Blocks.COAL_ORE)
                     ) {
-
                         return pos;
                     }
                 }
@@ -899,58 +650,37 @@ public class AICompanion implements ModInitializer {
     ) {
 
         if (state.isOf(Blocks.OAK_LOG)) {
-            return new ItemStack(
-                    Items.OAK_LOG
-            );
+            return new ItemStack(Items.OAK_LOG);
         }
 
         if (state.isOf(Blocks.BIRCH_LOG)) {
-            return new ItemStack(
-                    Items.BIRCH_LOG
-            );
+            return new ItemStack(Items.BIRCH_LOG);
         }
 
         if (state.isOf(Blocks.SPRUCE_LOG)) {
-            return new ItemStack(
-                    Items.SPRUCE_LOG
-            );
+            return new ItemStack(Items.SPRUCE_LOG);
         }
 
-        if (
-                state.isOf(Blocks.STONE)
-                        ||
-                state.isOf(Blocks.COBBLESTONE)
-        ) {
-            return new ItemStack(
-                    Items.COBBLESTONE
-            );
+        if (state.isOf(Blocks.STONE)
+                || state.isOf(Blocks.COBBLESTONE)) {
+
+            return new ItemStack(Items.COBBLESTONE);
         }
 
         if (state.isOf(Blocks.COAL_ORE)) {
-            return new ItemStack(
-                    Items.COAL
-            );
+            return new ItemStack(Items.COAL);
         }
 
         return ItemStack.EMPTY;
     }
 
-    // =========================================================
-    // INVENTORY SPACE
-    // =========================================================
-
     private static boolean hasInventorySpace(
             SimpleInventory inv
     ) {
 
-        for (int i = 0;
-             i < inv.size();
-             i++) {
+        for (int i = 0; i < inv.size(); i++) {
 
-            if (
-                    inv.getStack(i)
-                            .isEmpty()
-            ) {
+            if (inv.getStack(i).isEmpty()) {
                 return true;
             }
         }
@@ -958,26 +688,19 @@ public class AICompanion implements ModInitializer {
         return false;
     }
 
-    // =========================================================
-    // HOUSE
-    // =========================================================
-
     private static void house(
             ZombieEntity ai,
             ServerPlayerEntity player
     ) {
 
         ServerWorld world =
-                (ServerWorld)
-                        ai.getEntityWorld();
+                (ServerWorld) ai.getEntityWorld();
 
         BlockPos base =
-                player.getBlockPos()
-                        .add(6, 0, 6);
+                player.getBlockPos().add(6, 0, 6);
 
         int size = 9;
 
-        // Floor
         for (int x = 0; x < size; x++) {
 
             for (int z = 0; z < size; z++) {
@@ -990,7 +713,6 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Walls
         for (int y = 1; y <= 4; y++) {
 
             for (int x = 0; x < size; x++) {
@@ -1024,7 +746,6 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Door
         set(
                 world,
                 base.add(4, 1, 0),
@@ -1037,7 +758,6 @@ public class AICompanion implements ModInitializer {
                 Blocks.AIR
         );
 
-        // Windows
         set(
                 world,
                 base.add(0, 2, 3),
@@ -1050,7 +770,6 @@ public class AICompanion implements ModInitializer {
                 Blocks.GLASS
         );
 
-        // Roof
         for (int x = -1; x <= 9; x++) {
 
             for (int z = -1; z <= 9; z++) {
@@ -1063,15 +782,8 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        MODES.put(
-                ai.getUuid(),
-                "follow"
-        );
+        MODES.put(ai.getUuid(), "follow");
     }
-
-    // =========================================================
-    // CASTLE
-    // =========================================================
 
     private static void castle(
             ZombieEntity ai,
@@ -1079,16 +791,13 @@ public class AICompanion implements ModInitializer {
     ) {
 
         ServerWorld world =
-                (ServerWorld)
-                        ai.getEntityWorld();
+                (ServerWorld) ai.getEntityWorld();
 
         BlockPos base =
-                player.getBlockPos()
-                        .add(15, 0, 15);
+                player.getBlockPos().add(15, 0, 15);
 
         int size = 21;
 
-        // Floor
         for (int x = 0; x < size; x++) {
 
             for (int z = 0; z < size; z++) {
@@ -1101,7 +810,6 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Walls
         for (int y = 1; y <= 6; y++) {
 
             for (int x = 0; x < size; x++) {
@@ -1135,7 +843,6 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Gate
         for (int y = 1; y <= 3; y++) {
 
             set(
@@ -1151,31 +858,12 @@ public class AICompanion implements ModInitializer {
             );
         }
 
-        // Towers
-        tower(
-                world,
-                base
-        );
+        tower(world, base);
+        tower(world, base.add(17, 0, 0));
+        tower(world, base.add(0, 0, 17));
+        tower(world, base.add(17, 0, 17));
 
-        tower(
-                world,
-                base.add(17, 0, 0)
-        );
-
-        tower(
-                world,
-                base.add(0, 0, 17)
-        );
-
-        tower(
-                world,
-                base.add(17, 0, 17)
-        );
-
-        MODES.put(
-                ai.getUuid(),
-                "follow"
-        );
+        MODES.put(ai.getUuid(), "follow");
     }
 
     private static void tower(
@@ -1222,27 +910,20 @@ public class AICompanion implements ModInitializer {
         }
     }
 
-    // =========================================================
-    // PALACE
-    // =========================================================
-
     private static void palace(
             ZombieEntity ai,
             ServerPlayerEntity player
     ) {
 
         ServerWorld world =
-                (ServerWorld)
-                        ai.getEntityWorld();
+                (ServerWorld) ai.getEntityWorld();
 
         BlockPos base =
-                player.getBlockPos()
-                        .add(25, 0, 25);
+                player.getBlockPos().add(25, 0, 25);
 
         int width = 31;
         int depth = 25;
 
-        // Foundation
         for (int x = 0; x < width; x++) {
 
             for (int z = 0; z < depth; z++) {
@@ -1255,7 +936,6 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Palace walls
         for (int y = 1; y <= 8; y++) {
 
             for (int x = 0; x < width; x++) {
@@ -1289,7 +969,6 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Entrance
         for (int y = 1; y <= 4; y++) {
 
             set(
@@ -1299,7 +978,6 @@ public class AICompanion implements ModInitializer {
             );
         }
 
-        // Roof
         for (int x = 0; x < width; x++) {
 
             for (int z = 0; z < depth; z++) {
@@ -1312,40 +990,16 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        // Four towers
+        tower(world, base);
+        tower(world, base.add(width - 4, 0, 0));
+        tower(world, base.add(0, 0, depth - 4));
         tower(
                 world,
-                base
+                base.add(width - 4, 0, depth - 4)
         );
 
-        tower(
-                world,
-                base.add(width - 4, 0, 0)
-        );
-
-        tower(
-                world,
-                base.add(0, 0, depth - 4)
-        );
-
-        tower(
-                world,
-                base.add(
-                        width - 4,
-                        0,
-                        depth - 4
-                )
-        );
-
-        MODES.put(
-                ai.getUuid(),
-                "follow"
-        );
+        MODES.put(ai.getUuid(), "follow");
     }
-
-    // =========================================================
-    // BLOCK SET
-    // =========================================================
 
     private static void set(
             ServerWorld world,
@@ -1356,8 +1010,7 @@ public class AICompanion implements ModInitializer {
         if (
                 block == Blocks.AIR
                         ||
-                world.getBlockState(pos)
-                        .isAir()
+                world.getBlockState(pos).isAir()
         ) {
 
             world.setBlockState(
@@ -1367,10 +1020,6 @@ public class AICompanion implements ModInitializer {
         }
     }
 
-    // =========================================================
-    // RETURN ITEMS
-    // =========================================================
-
     private static void returnItems(
             ZombieEntity ai,
             ServerPlayerEntity player
@@ -1378,29 +1027,20 @@ public class AICompanion implements ModInitializer {
 
         if (ai.distanceTo(player) > 4) {
 
-            follow(
-                    ai,
-                    player
-            );
-
+            follow(ai, player);
             return;
         }
 
         SimpleInventory inv =
-                INVENTORIES.get(
-                        ai.getUuid()
-                );
+                INVENTORIES.get(ai.getUuid());
 
         if (inv == null) {
             return;
         }
 
-        for (int i = 0;
-             i < inv.size();
-             i++) {
+        for (int i = 0; i < inv.size(); i++) {
 
-            ItemStack stack =
-                    inv.getStack(i);
+            ItemStack stack = inv.getStack(i);
 
             if (stack.isEmpty()) {
                 continue;
@@ -1426,42 +1066,16 @@ public class AICompanion implements ModInitializer {
             }
         }
 
-        MODES.put(
-                ai.getUuid(),
-                "follow"
-        );
+        MODES.put(ai.getUuid(), "follow");
     }
-
-    // =========================================================
-    // ADVENTURE
-    // =========================================================
 
     private static void adventure(
             ZombieEntity ai,
             ServerPlayerEntity player
     ) {
 
-        protect(
-                ai,
-                player
-        );
-
-        /*
-         * Adventure mode currently combines
-         * following + protection.
-         *
-         * Structure searches are available through:
-         *
-         * /ai nether
-         * /ai stronghold
-         * /ai end
-         * /ai elytra
-         */
+        protect(ai, player);
     }
-
-    // =========================================================
-    // STRONGHOLD
-    // =========================================================
 
     private static int locateStronghold(
             ServerCommandSource source
@@ -1492,10 +1106,6 @@ public class AICompanion implements ModInitializer {
         return 1;
     }
 
-    // =========================================================
-    // END CITY / ELYTRA
-    // =========================================================
-
     private static int locateEndCity(
             ServerCommandSource source
     ) {
@@ -1524,10 +1134,6 @@ public class AICompanion implements ModInitializer {
         return 1;
     }
 
-    // =========================================================
-    // NETHER
-    // =========================================================
-
     private static int netherInfo(
             ServerCommandSource source
     ) {
@@ -1543,9 +1149,7 @@ public class AICompanion implements ModInitializer {
                 source.getServer();
 
         ServerWorld nether =
-                server.getWorld(
-                        World.NETHER
-                );
+                server.getWorld(World.NETHER);
 
         if (nether == null) {
 
@@ -1575,43 +1179,31 @@ public class AICompanion implements ModInitializer {
         return 1;
     }
 
-    // =========================================================
-    // GET OWNER
-    // =========================================================
-
     private static ServerPlayerEntity getOwner(
             ZombieEntity ai
     ) {
 
         UUID owner =
-                OWNERS.get(
-                        ai.getUuid()
-                );
+                OWNERS.get(ai.getUuid());
 
         if (owner == null) {
             return null;
         }
 
         ServerWorld world =
-                (ServerWorld)
-                        ai.getEntityWorld();
+                (ServerWorld) ai.getEntityWorld();
 
         return world.getServer()
                 .getPlayerManager()
                 .getPlayer(owner);
     }
 
-    // =========================================================
-    // FIND COMPANION
-    // =========================================================
-
     private static ZombieEntity findCompanion(
             ServerPlayerEntity player
     ) {
 
         ServerWorld world =
-                (ServerWorld)
-                        player.getEntityWorld();
+                (ServerWorld) player.getEntityWorld();
 
         for (ZombieEntity ai :
                 world.getEntitiesByType(
@@ -1628,16 +1220,12 @@ public class AICompanion implements ModInitializer {
         ) {
 
             UUID owner =
-                    OWNERS.get(
-                            ai.getUuid()
-                    );
+                    OWNERS.get(ai.getUuid());
 
             if (
                     owner != null
                             &&
-                    owner.equals(
-                            player.getUuid()
-                    )
+                    owner.equals(player.getUuid())
             ) {
 
                 return ai;
@@ -1646,10 +1234,6 @@ public class AICompanion implements ModInitializer {
 
         return null;
     }
-
-    // =========================================================
-    // REMOVE
-    // =========================================================
 
     private static int remove(
             ServerCommandSource source
@@ -1676,8 +1260,7 @@ public class AICompanion implements ModInitializer {
             return 0;
         }
 
-        UUID id =
-                ai.getUuid();
+        UUID id = ai.getUuid();
 
         OWNERS.remove(id);
         MODES.remove(id);
