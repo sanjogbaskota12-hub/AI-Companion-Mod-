@@ -17,25 +17,101 @@ public class AICompanion implements ModInitializer {
 
                 dispatcher.register(
                     CommandManager.literal("ai")
+
                         .then(CommandManager.literal("spawn")
                             .executes(context -> {
+
                                 context.getSource().sendFeedback(
                                     () -> Text.literal(
-                                        "AI Companion: Spawn command received!"
+                                        "§a[AI Companion] §fAI Companion spawned!"
                                     ),
                                     false
                                 );
+
                                 return 1;
                             })
                         )
+
                         .then(CommandManager.literal("follow")
                             .executes(context -> {
+
                                 context.getSource().sendFeedback(
                                     () -> Text.literal(
-                                        "AI Companion: Follow command received!"
+                                        "§a[AI Companion] §fFollowing you!"
                                     ),
                                     false
                                 );
+
+                                return 1;
+                            })
+                        )
+
+                        .then(CommandManager.literal("stop")
+                            .executes(context -> {
+
+                                context.getSource().sendFeedback(
+                                    () -> Text.literal(
+                                        "§e[AI Companion] §fStopped."
+                                    ),
+                                    false
+                                );
+
+                                return 1;
+                            })
+                        )
+
+                        .then(CommandManager.literal("mine")
+                            .executes(context -> {
+
+                                context.getSource().sendFeedback(
+                                    () -> Text.literal(
+                                        "§b[AI Companion] §fMining mode enabled!"
+                                    ),
+                                    false
+                                );
+
+                                return 1;
+                            })
+                        )
+
+                        .then(CommandManager.literal("build")
+                            .executes(context -> {
+
+                                context.getSource().sendFeedback(
+                                    () -> Text.literal(
+                                        "§6[AI Companion] §fBuilding mode enabled!"
+                                    ),
+                                    false
+                                );
+
+                                return 1;
+                            })
+                        )
+
+                        .then(CommandManager.literal("work")
+                            .executes(context -> {
+
+                                context.getSource().sendFeedback(
+                                    () -> Text.literal(
+                                        "§a[AI Companion] §fMining + Building mode enabled!"
+                                    ),
+                                    false
+                                );
+
+                                return 1;
+                            })
+                        )
+
+                        .then(CommandManager.literal("remove")
+                            .executes(context -> {
+
+                                context.getSource().sendFeedback(
+                                    () -> Text.literal(
+                                        "§c[AI Companion] §fRemoved."
+                                    ),
+                                    false
+                                );
+
                                 return 1;
                             })
                         )
@@ -43,4 +119,4 @@ public class AICompanion implements ModInitializer {
             }
         );
     }
-                            } 
+}
