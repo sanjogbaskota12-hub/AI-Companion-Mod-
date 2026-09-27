@@ -1,1 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "aicompanion",
+  "version": "${version}",
+  "name": "AI Companion",
+  "description": "AI Companion Minecraft Fabric Mod",
+  "authors": [
+    "Sanjog"
+  ],
+  "environment": "*",
 
+  "entrypoints": {
+    "main": [
+      "com.aicompanion.AICompanion"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "1.21.11",
+    "fabric-api": "*"
+  }
+}
