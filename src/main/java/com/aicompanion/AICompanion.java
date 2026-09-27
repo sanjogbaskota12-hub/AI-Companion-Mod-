@@ -31,18 +31,14 @@ public class AICompanion implements ModInitializer {
                                     .then(
                                             CommandManager.literal("spawn")
                                                     .executes(
-                                                            c -> spawn(
-                                                                    c.getSource()
-                                                            )
+                                                            c -> spawn(c.getSource())
                                                     )
                                     )
 
                                     .then(
                                             CommandManager.literal("remove")
                                                     .executes(
-                                                            c -> remove(
-                                                                    c.getSource()
-                                                            )
+                                                            c -> remove(c.getSource())
                                                     )
                                     )
                     );
@@ -50,9 +46,7 @@ public class AICompanion implements ModInitializer {
         );
     }
 
-    private static int spawn(
-            ServerCommandSource source
-    ) {
+    private static int spawn(ServerCommandSource source) {
 
         ServerPlayerEntity player = source.getPlayer();
 
@@ -62,7 +56,6 @@ public class AICompanion implements ModInitializer {
 
         ServerWorld world = source.getWorld();
 
-        // Create AI Companion
         AICompanionEntity companion =
                 ModEntities.AI_COMPANION.create(
                         world,
@@ -71,40 +64,32 @@ public class AICompanion implements ModInitializer {
 
         if (companion == null) {
             source.sendError(
-                    Text.literal(
-                            "Could not create AI Companion."
-                    )
+                    Text.literal("Could not create AI Companion.")
             );
-
             return 0;
         }
 
-        // Spawn beside player
         companion.refreshPositionAndAngles(
-                player.getX() + 2,
+                player.getX() + 2.0,
                 player.getY(),
-                player.getZ() + 2,
+                player.getZ() + 2.0,
                 player.getYaw(),
-                0
+                0.0F
         );
 
-        // Name
         companion.setCustomName(
                 Text.literal("AI Companion")
         );
 
         companion.setCustomNameVisible(true);
 
-        // Owner
         companion.setOwner(player);
 
-        // Sword
         companion.equipStack(
                 EquipmentSlot.MAINHAND,
                 new ItemStack(Items.IRON_SWORD)
         );
 
-        // Armor
         companion.equipStack(
                 EquipmentSlot.HEAD,
                 new ItemStack(Items.IRON_HELMET)
@@ -125,15 +110,13 @@ public class AICompanion implements ModInitializer {
                 new ItemStack(Items.IRON_BOOTS)
         );
 
-        // Never despawn
         companion.setPersistent();
 
-        // Add to world
         world.spawnEntity(companion);
 
         source.sendFeedback(
                 () -> Text.literal(
-                        "§a[AI] Human-like Companion spawned!"
+                        "§a[AI] Human-like AI Companion spawned!"
                 ),
                 false
         );
@@ -141,9 +124,7 @@ public class AICompanion implements ModInitializer {
         return 1;
     }
 
-    private static int remove(
-            ServerCommandSource source
-    ) {
+    private static int remove(ServerCommandSource source) {
 
         ServerPlayerEntity player = source.getPlayer();
 
@@ -157,7 +138,7 @@ public class AICompanion implements ModInitializer {
                 AICompanionEntity companion :
                 world.getEntitiesByType(
                         ModEntities.AI_COMPANION,
-                        e -> e.isOwner(player)
+                        entity -> entity.isOwner(player)
                 )
         ) {
 
@@ -175,7 +156,7 @@ public class AICompanion implements ModInitializer {
 
         source.sendError(
                 Text.literal(
-                        "§cAI Companion not found."
+                        "§c[AI] Companion not found."
                 )
         );
 
