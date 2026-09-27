@@ -30,6 +30,7 @@ public class AICompanionEntity extends PathAwareEntity {
     }
 
     public static DefaultAttributeContainer.Builder createAICompanionAttributes() {
+
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.32)
@@ -41,16 +42,19 @@ public class AICompanionEntity extends PathAwareEntity {
     @Override
     protected void initGoals() {
 
+        // Attack enemies
         this.goalSelector.add(
                 1,
                 new MeleeAttackGoal(this, 1.2, true)
         );
 
+        // Walk around
         this.goalSelector.add(
                 6,
                 new WanderAroundFarGoal(this, 1.0)
         );
 
+        // Look at players
         this.goalSelector.add(
                 7,
                 new LookAtEntityGoal(
@@ -60,16 +64,19 @@ public class AICompanionEntity extends PathAwareEntity {
                 )
         );
 
+        // Look around
         this.goalSelector.add(
                 8,
                 new LookAroundGoal(this)
         );
 
+        // Fight anything that hurts it
         this.targetSelector.add(
                 1,
                 new RevengeGoal(this)
         );
 
+        // Attack hostile mobs
         this.targetSelector.add(
                 2,
                 new ActiveTargetGoal<>(
@@ -80,6 +87,10 @@ public class AICompanionEntity extends PathAwareEntity {
         );
     }
 
+    // =========================
+    // OWNER
+    // =========================
+
     public void setOwner(PlayerEntity player) {
         this.ownerUuid = player.getUuid();
     }
@@ -89,10 +100,12 @@ public class AICompanionEntity extends PathAwareEntity {
     }
 
     public boolean isOwner(LivingEntity entity) {
+
         return ownerUuid != null
                 && entity.getUuid().equals(ownerUuid);
     }
 
+    // Never despawn
     @Override
     public boolean cannotDespawn() {
         return true;
