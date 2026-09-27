@@ -1,6 +1,7 @@
 package com.aicompanion;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
@@ -12,11 +13,16 @@ public class ModEntities {
     public static final EntityType<AICompanionEntity> AI_COMPANION =
             Registry.register(
                     Registries.ENTITY_TYPE,
-                    Identifier.of("aicompanion", "ai_companion"),
-                    EntityType.Builder
-                            .create(AICompanionEntity::new, SpawnGroup.CREATURE)
-                            .dimensions(0.6F, 1.8F)
-                            .build()
+                    Identifier.of(
+                            AICompanion.MOD_ID,
+                            "ai_companion"
+                    ),
+                    EntityType.Builder.create(
+                            AICompanionEntity::new,
+                            SpawnGroup.CREATURE
+                    )
+                    .dimensions(0.6F, 1.8F)
+                    .build()
             );
 
     public static void register() {
