@@ -25,7 +25,9 @@ public class AICompanion implements ModInitializer {
                     CommandManager.literal("ai")
 
                         .then(CommandManager.literal("spawn")
-                            .executes(context -> spawnCompanion(context.getSource()))
+                            .executes(context ->
+                                spawnCompanion(context.getSource())
+                            )
                         )
 
                         .then(CommandManager.literal("follow")
@@ -115,7 +117,7 @@ public class AICompanion implements ModInitializer {
             return 0;
         }
 
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = source.getWorld();
 
         ZombieEntity companion = EntityType.ZOMBIE.create(
             world,
