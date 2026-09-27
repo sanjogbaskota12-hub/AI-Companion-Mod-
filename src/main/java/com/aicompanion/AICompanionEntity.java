@@ -23,9 +23,10 @@ public class AICompanionEntity extends PathAwareEntity {
     private UUID ownerUuid;
 
     public AICompanionEntity(
-            EntityType<? extends AICompanionEntity> entityType,
-            World world) {
-        super(entityType, world);
+            EntityType<? extends AICompanionEntity> type,
+            World world
+    ) {
+        super(type, world);
     }
 
     public static DefaultAttributeContainer.Builder createAICompanionAttributes() {
@@ -40,19 +41,16 @@ public class AICompanionEntity extends PathAwareEntity {
     @Override
     protected void initGoals() {
 
-        // Attack enemies
         this.goalSelector.add(
                 1,
                 new MeleeAttackGoal(this, 1.2, true)
         );
 
-        // Walk around
         this.goalSelector.add(
                 6,
                 new WanderAroundFarGoal(this, 1.0)
         );
 
-        // Look at player
         this.goalSelector.add(
                 7,
                 new LookAtEntityGoal(
@@ -62,19 +60,16 @@ public class AICompanionEntity extends PathAwareEntity {
                 )
         );
 
-        // Look around
         this.goalSelector.add(
                 8,
                 new LookAroundGoal(this)
         );
 
-        // Fight back when attacked
         this.targetSelector.add(
                 1,
                 new RevengeGoal(this)
         );
 
-        // Target hostile mobs
         this.targetSelector.add(
                 2,
                 new ActiveTargetGoal<>(
@@ -94,8 +89,8 @@ public class AICompanionEntity extends PathAwareEntity {
     }
 
     public boolean isOwner(LivingEntity entity) {
-        return this.ownerUuid != null
-                && entity.getUuid().equals(this.ownerUuid);
+        return ownerUuid != null
+                && entity.getUuid().equals(ownerUuid);
     }
 
     @Override
