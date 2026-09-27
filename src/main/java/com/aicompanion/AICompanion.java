@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.inventory.SimpleInventory;
@@ -27,180 +28,220 @@ public class AICompanion implements ModInitializer {
 
     public static final String MOD_ID = "aicompanion";
 
-    private static final Map<UUID, SimpleInventory> INVENTORIES = new HashMap<>();
-    private static final Map<UUID, UUID> OWNERS = new HashMap<>();
+    private static final Map<UUID, SimpleInventory> INVENTORIES =
+            new HashMap<>();
 
-    private static final Map<UUID, String> MODES = new HashMap<>();
+    private static final Map<UUID, UUID> OWNERS =
+            new HashMap<>();
+
+    private static final Map<UUID, String> MODES =
+            new HashMap<>();
 
     @Override
     public void onInitialize() {
 
         CommandRegistrationCallback.EVENT.register(
-            (dispatcher, registryAccess, environment) -> {
+                (dispatcher, registryAccess, environment) -> {
 
-                dispatcher.register(
-                    CommandManager.literal("ai")
+                    dispatcher.register(
+                            CommandManager.literal("ai")
 
-                        .then(CommandManager.literal("spawn")
-                            .executes(context ->
-                                spawnCompanion(context.getSource())
-                            )
-                        )
+                                    .then(CommandManager.literal("spawn")
+                                            .executes(context ->
+                                                    spawnCompanion(
+                                                            context.getSource()
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("follow")
-                            .executes(context ->
-                                setMode(context.getSource(), "follow")
-                            )
-                        )
+                                    .then(CommandManager.literal("follow")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "follow"
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("stop")
-                            .executes(context ->
-                                setMode(context.getSource(), "stop")
-                            )
-                        )
+                                    .then(CommandManager.literal("protect")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "protect"
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("mine")
-                            .executes(context ->
-                                setMode(context.getSource(), "mine")
-                            )
-                        )
+                                    .then(CommandManager.literal("stop")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "stop"
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("return")
-                            .executes(context ->
-                                setMode(context.getSource(), "return")
-                            )
-                        )
+                                    .then(CommandManager.literal("mine")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "mine"
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("work")
-                            .executes(context ->
-                                setMode(context.getSource(), "work")
-                            )
-                        )
+                                    .then(CommandManager.literal("return")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "return"
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("build")
-                            .executes(context ->
-                                setMode(context.getSource(), "build")
-                            )
-                        )
+                                    .then(CommandManager.literal("build")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "build"
+                                                    )
+                                            )
+                                    )
 
-                        .then(CommandManager.literal("remove")
-                            .executes(context ->
-                                removeCompanion(context.getSource())
-                            )
-                        )
-                );
-            }
+                                    .then(CommandManager.literal("work")
+                                            .executes(context ->
+                                                    setMode(
+                                                            context.getSource(),
+                                                            "work"
+                                                    )
+                                            )
+                                    )
+
+                                    .then(CommandManager.literal("remove")
+                                            .executes(context ->
+                                                    removeCompanion(
+                                                            context.getSource()
+                                                    )
+                                            )
+                                    )
+                    );
+                }
         );
 
-        ServerTickEvents.END_WORLD_TICK.register(world ->
-            tickCompanions(world)
+        ServerTickEvents.END_WORLD_TICK.register(
+                AICompanion::tickCompanions
         );
     }
 
-    private static int spawnCompanion(ServerCommandSource source) {
+    private static int spawnCompanion(
+            ServerCommandSource source
+    ) {
 
         ServerPlayerEntity player = source.getPlayer();
 
         if (player == null) {
             source.sendError(
-                Text.literal("Command must be run by a player.")
+                    Text.literal(
+                            "Command must be run by a player."
+                    )
             );
             return 0;
         }
 
         ServerWorld world = source.getWorld();
 
-        ZombieEntity companion = EntityType.ZOMBIE.create(
-            world,
-            SpawnReason.COMMAND
-        );
+        ZombieEntity companion =
+                EntityType.ZOMBIE.create(
+                        world,
+                        SpawnReason.COMMAND
+                );
 
         if (companion == null) {
             source.sendError(
-                Text.literal("Could not create companion.")
+                    Text.literal(
+                            "Could not create companion."
+                    )
             );
             return 0;
         }
 
         companion.refreshPositionAndAngles(
-            player.getX() + 2,
-            player.getY(),
-            player.getZ(),
-            player.getYaw(),
-            0
+                player.getX() + 2,
+                player.getY(),
+                player.getZ() + 2,
+                player.getYaw(),
+                0
         );
 
         companion.setCustomName(
-            Text.literal("§bAI Companion")
+                Text.literal("§bAI Companion")
         );
 
         companion.setCustomNameVisible(true);
         companion.setPersistent();
-
-        // Companion should not attack the player.
         companion.setTarget(null);
 
-        // Give it a pickaxe.
         companion.equipStack(
-            net.minecraft.entity.EquipmentSlot.MAINHAND,
-            new ItemStack(Items.IRON_PICKAXE)
+                EquipmentSlot.MAINHAND,
+                new ItemStack(Items.IRON_PICKAXE)
         );
 
         world.spawnEntity(companion);
 
         INVENTORIES.put(
-            companion.getUuid(),
-            new SimpleInventory(27)
+                companion.getUuid(),
+                new SimpleInventory(27)
         );
 
         OWNERS.put(
-            companion.getUuid(),
-            player.getUuid()
+                companion.getUuid(),
+                player.getUuid()
         );
 
         MODES.put(
-            companion.getUuid(),
-            "follow"
+                companion.getUuid(),
+                "follow"
         );
 
         source.sendFeedback(
-            () -> Text.literal(
-                "§a[AI Companion] §fCompanion created!"
-            ),
-            false
+                () -> Text.literal(
+                        "§a[AI] §fAI Companion spawned!"
+                ),
+                false
         );
 
         return 1;
     }
 
     private static int setMode(
-        ServerCommandSource source,
-        String mode
+            ServerCommandSource source,
+            String mode
     ) {
 
-        ServerPlayerEntity player = source.getPlayer();
+        ServerPlayerEntity player =
+                source.getPlayer();
 
         if (player == null) {
             return 0;
         }
 
         ZombieEntity companion =
-            findCompanion(player);
+                findCompanion(player);
 
         if (companion == null) {
 
             source.sendError(
-                Text.literal(
-                    "§cNo AI Companion found. Use /ai spawn"
-                )
+                    Text.literal(
+                            "§cNo AI Companion found. Use /ai spawn"
+                    )
             );
 
             return 0;
         }
 
         MODES.put(
-            companion.getUuid(),
-            mode
+                companion.getUuid(),
+                mode
         );
 
         String message;
@@ -208,232 +249,298 @@ public class AICompanion implements ModInitializer {
         switch (mode) {
 
             case "follow":
-                message =
-                    "§a[AI] §fFollowing you.";
+                message = "§a[AI] §fFollowing you.";
+                break;
+
+            case "protect":
+                message = "§c[AI] §fProtection mode enabled!";
                 break;
 
             case "mine":
                 message =
-                    "§b[AI] §fMining iron, gold and diamond.";
+                        "§b[AI] §fLooking for Iron, Gold and Diamond.";
                 break;
 
             case "return":
                 message =
-                    "§e[AI] §fReturning to you.";
+                        "§e[AI] §fReturning with collected items.";
                 break;
 
             case "build":
                 message =
-                    "§6[AI] §fBuilding mode started.";
+                        "§6[AI] §fBuilding mode started.";
                 break;
 
             case "work":
                 message =
-                    "§a[AI] §fWorking.";
+                        "§a[AI] §fWorking.";
                 break;
 
             default:
                 message =
-                    "§e[AI] §fStopped.";
+                        "§e[AI] §fStopped.";
+                break;
         }
 
         source.sendFeedback(
-            () -> Text.literal(message),
-            false
+                () -> Text.literal(message),
+                false
         );
 
         return 1;
     }
 
-    private static void tickCompanions(ServerWorld world) {
+    private static void tickCompanions(
+            ServerWorld world
+    ) {
 
         for (ZombieEntity companion :
-            world.getEntitiesByType(
-                EntityType.ZOMBIE,
-                entity ->
-                    entity.hasCustomName()
-                    &&
-                    entity.getCustomName() != null
-                    &&
-                    entity.getCustomName()
-                        .getString()
-                        .contains("AI Companion")
-            )
+                world.getEntitiesByType(
+                        EntityType.ZOMBIE,
+                        entity ->
+                                entity.hasCustomName()
+                                        &&
+                                entity.getCustomName() != null
+                                        &&
+                                entity.getCustomName()
+                                        .getString()
+                                        .contains("AI Companion")
+                )
         ) {
 
-            UUID id = companion.getUuid();
+            UUID id =
+                    companion.getUuid();
 
-            String mode = MODES.get(id);
-
-            if (mode == null) {
-                mode = "stop";
-            }
+            String mode =
+                    MODES.getOrDefault(
+                            id,
+                            "stop"
+                    );
 
             ServerPlayerEntity player =
-                getOwner(companion);
+                    getOwner(companion);
 
             if (player == null) {
                 continue;
             }
 
-            // Stop normal zombie attacking.
+            // Prevent normal zombie target.
             companion.setTarget(null);
 
             if (mode.equals("follow")) {
-                followPlayer(companion, player);
-            }
 
-            else if (mode.equals("mine")) {
-                miningAI(companion, player);
-            }
+                followPlayer(
+                        companion,
+                        player
+                );
 
-            else if (mode.equals("return")) {
-                returnToPlayer(companion, player);
-            }
+            } else if (mode.equals("protect")) {
 
-            else if (mode.equals("build")) {
-                buildPalace(companion, player);
+                protectPlayer(
+                        companion,
+                        player
+                );
+
+            } else if (mode.equals("mine")) {
+
+                miningAI(
+                        companion,
+                        player
+                );
+
+            } else if (mode.equals("return")) {
+
+                returnToPlayer(
+                        companion,
+                        player
+                );
+
+            } else if (mode.equals("build")) {
+
+                buildPalace(
+                        companion,
+                        player
+                );
             }
         }
     }
 
     private static void followPlayer(
-        ZombieEntity companion,
-        ServerPlayerEntity player
+            ZombieEntity companion,
+            ServerPlayerEntity player
     ) {
 
         double distance =
-            companion.distanceTo(player);
+                companion.distanceTo(player);
 
         if (distance > 4) {
 
             companion.getNavigation()
-                .startMovingTo(
-                    player,
-                    1.15
-                );
+                    .startMovingTo(
+                            player,
+                            1.15
+                    );
         }
 
         if (distance > 30) {
 
+            ServerWorld world =
+                    (ServerWorld) companion.getEntityWorld();
+
             companion.teleport(
-                player.getServerWorld(),
-                player.getX() + 2,
-                player.getY(),
-                player.getZ() + 2,
-                false
+                    world,
+                    player.getX() + 2,
+                    player.getY(),
+                    player.getZ() + 2,
+                    false
             );
         }
     }
 
-    private static void returnToPlayer(
-        ZombieEntity companion,
-        ServerPlayerEntity player
+    private static void protectPlayer(
+            ZombieEntity companion,
+            ServerPlayerEntity player
     ) {
 
         double distance =
-            companion.distanceTo(player);
+                companion.distanceTo(player);
 
-        if (distance > 3) {
+        if (distance > 7) {
 
             companion.getNavigation()
-                .startMovingTo(
-                    player,
-                    1.2
-                );
+                    .startMovingTo(
+                            player,
+                            1.2
+                    );
+
+            return;
         }
 
-        else {
+        var enemies =
+                player.getEntityWorld()
+                        .getOtherEntities(
+                                player,
+                                player.getBoundingBox()
+                                        .expand(12),
+                                entity ->
+                                        entity instanceof
+                                                net.minecraft.entity.mob.HostileEntity
+                        );
 
-            giveInventoryToPlayer(
-                companion,
-                player
+        if (!enemies.isEmpty()) {
+
+            var enemy =
+                    enemies.get(0);
+
+            companion.setTarget(
+                    enemy instanceof
+                            net.minecraft.entity.LivingEntity
+                            ? (net.minecraft.entity.LivingEntity) enemy
+                            : null
             );
 
-            MODES.put(
-                companion.getUuid(),
-                "follow"
+            companion.getNavigation()
+                    .startMovingTo(
+                            enemy.getX(),
+                            enemy.getY(),
+                            enemy.getZ(),
+                            1.3
+                    );
+
+        } else {
+
+            companion.setTarget(null);
+
+            followPlayer(
+                    companion,
+                    player
             );
         }
     }
 
     private static void miningAI(
-        ZombieEntity companion,
-        ServerPlayerEntity player
+            ZombieEntity companion,
+            ServerPlayerEntity player
     ) {
 
         ServerWorld world =
-            (ServerWorld) companion.getEntityWorld();
+                (ServerWorld) companion.getEntityWorld();
 
         BlockPos target =
-            findOre(
-                world,
-                companion.getBlockPos()
-            );
+                findOre(
+                        world,
+                        companion.getBlockPos()
+                );
 
         if (target == null) {
 
             companion.getNavigation()
-                .startMovingTo(
-                    player,
-                    1.0
-                );
+                    .startMovingTo(
+                            player,
+                            1.0
+                    );
 
             return;
         }
 
         double distance =
-            companion.getBlockPos()
-                .getSquaredDistance(target);
+                companion.getBlockPos()
+                        .getSquaredDistance(target);
 
         if (distance > 6) {
 
             companion.getNavigation()
-                .startMovingTo(
-                    target.getX(),
-                    target.getY(),
-                    target.getZ(),
-                    1.0
-                );
+                    .startMovingTo(
+                            target.getX(),
+                            target.getY(),
+                            target.getZ(),
+                            1.0
+                    );
 
             return;
         }
 
         BlockState state =
-            world.getBlockState(target);
+                world.getBlockState(target);
 
         ItemStack reward =
-            getOreDrop(state);
+                getOreDrop(state);
 
         if (!reward.isEmpty()) {
 
             SimpleInventory inventory =
-                INVENTORIES.get(
-                    companion.getUuid()
-                );
+                    INVENTORIES.get(
+                            companion.getUuid()
+                    );
 
             if (inventory != null) {
 
-                inventory.addStack(reward);
+                boolean added =
+                        inventory.addStack(
+                                reward
+                        ).isEmpty();
 
-                world.breakBlock(
-                    target,
-                    false,
-                    companion
-                );
+                if (added) {
+
+                    world.breakBlock(
+                            target,
+                            false,
+                            companion
+                    );
+                }
             }
         }
     }
 
     private static BlockPos findOre(
-        ServerWorld world,
-        BlockPos center
+            ServerWorld world,
+            BlockPos center
     ) {
 
         BlockPos best = null;
 
         double bestDistance =
-            Double.MAX_VALUE;
+                Double.MAX_VALUE;
 
         int radius = 12;
 
@@ -444,21 +551,27 @@ public class AICompanion implements ModInitializer {
                 for (int z = -radius; z <= radius; z++) {
 
                     BlockPos pos =
-                        center.add(x, y, z);
+                            center.add(
+                                    x,
+                                    y,
+                                    z
+                            );
 
                     BlockState state =
-                        world.getBlockState(pos);
+                            world.getBlockState(pos);
 
                     if (!isWantedOre(state)) {
                         continue;
                     }
 
                     double distance =
-                        center.getSquaredDistance(pos);
+                            center.getSquaredDistance(pos);
 
                     if (distance < bestDistance) {
 
-                        bestDistance = distance;
+                        bestDistance =
+                                distance;
+
                         best = pos;
                     }
                 }
@@ -469,141 +582,203 @@ public class AICompanion implements ModInitializer {
     }
 
     private static boolean isWantedOre(
-        BlockState state
+            BlockState state
     ) {
 
         return state.isOf(Blocks.IRON_ORE)
-            || state.isOf(Blocks.DEEPSLATE_IRON_ORE)
-            || state.isOf(Blocks.GOLD_ORE)
-            || state.isOf(Blocks.DEEPSLATE_GOLD_ORE)
-            || state.isOf(Blocks.DIAMOND_ORE)
-            || state.isOf(Blocks.DEEPSLATE_DIAMOND_ORE);
+                || state.isOf(
+                        Blocks.DEEPSLATE_IRON_ORE
+                )
+                || state.isOf(
+                        Blocks.GOLD_ORE
+                )
+                || state.isOf(
+                        Blocks.DEEPSLATE_GOLD_ORE
+                )
+                || state.isOf(
+                        Blocks.DIAMOND_ORE
+                )
+                || state.isOf(
+                        Blocks.DEEPSLATE_DIAMOND_ORE
+                );
     }
 
     private static ItemStack getOreDrop(
-        BlockState state
+            BlockState state
     ) {
 
         if (
-            state.isOf(Blocks.IRON_ORE)
-            ||
-            state.isOf(Blocks.DEEPSLATE_IRON_ORE)
+                state.isOf(Blocks.IRON_ORE)
+                        ||
+                state.isOf(
+                        Blocks.DEEPSLATE_IRON_ORE
+                )
         ) {
 
             return new ItemStack(
-                Items.RAW_IRON
+                    Items.RAW_IRON
             );
         }
 
         if (
-            state.isOf(Blocks.GOLD_ORE)
-            ||
-            state.isOf(Blocks.DEEPSLATE_GOLD_ORE)
+                state.isOf(Blocks.GOLD_ORE)
+                        ||
+                state.isOf(
+                        Blocks.DEEPSLATE_GOLD_ORE
+                )
         ) {
 
             return new ItemStack(
-                Items.RAW_GOLD
+                    Items.RAW_GOLD
             );
         }
 
         if (
-            state.isOf(Blocks.DIAMOND_ORE)
-            ||
-            state.isOf(Blocks.DEEPSLATE_DIAMOND_ORE)
+                state.isOf(Blocks.DIAMOND_ORE)
+                        ||
+                state.isOf(
+                        Blocks.DEEPSLATE_DIAMOND_ORE
+                )
         ) {
 
             return new ItemStack(
-                Items.DIAMOND
+                    Items.DIAMOND
             );
         }
 
         return ItemStack.EMPTY;
     }
 
+    private static void returnToPlayer(
+            ZombieEntity companion,
+            ServerPlayerEntity player
+    ) {
+
+        double distance =
+                companion.distanceTo(player);
+
+        if (distance > 3) {
+
+            companion.getNavigation()
+                    .startMovingTo(
+                            player,
+                            1.2
+                    );
+
+        } else {
+
+            giveInventoryToPlayer(
+                    companion,
+                    player
+            );
+
+            MODES.put(
+                    companion.getUuid(),
+                    "follow"
+            );
+        }
+    }
+
     private static void giveInventoryToPlayer(
-        ZombieEntity companion,
-        ServerPlayerEntity player
+            ZombieEntity companion,
+            ServerPlayerEntity player
     ) {
 
         SimpleInventory inventory =
-            INVENTORIES.get(
-                companion.getUuid()
-            );
+                INVENTORIES.get(
+                        companion.getUuid()
+                );
 
         if (inventory == null) {
             return;
         }
 
-        for (int i = 0; i < inventory.size(); i++) {
+        for (int i = 0;
+             i < inventory.size();
+             i++) {
 
             ItemStack stack =
-                inventory.getStack(i);
+                    inventory.getStack(i);
 
             if (stack.isEmpty()) {
                 continue;
             }
 
-            ItemStack remaining =
-                player.getInventory()
-                    .insertStack(stack.copy());
+            player.getInventory()
+                    .insertStack(stack);
 
-            inventory.setStack(
-                i,
-                remaining
-            );
+            if (stack.isEmpty()) {
+
+                inventory.setStack(
+                        i,
+                        ItemStack.EMPTY
+                );
+
+            } else {
+
+                inventory.setStack(
+                        i,
+                        stack
+                );
+            }
         }
     }
 
     private static ServerPlayerEntity getOwner(
-        ZombieEntity companion
+            ZombieEntity companion
     ) {
 
         UUID owner =
-            OWNERS.get(
-                companion.getUuid()
-            );
+                OWNERS.get(
+                        companion.getUuid()
+                );
 
         if (owner == null) {
             return null;
         }
 
         ServerWorld world =
-            (ServerWorld) companion.getEntityWorld();
+                (ServerWorld) companion.getEntityWorld();
 
         return world.getServer()
-            .getPlayerManager()
-            .getPlayer(owner);
+                .getPlayerManager()
+                .getPlayer(owner);
     }
 
     private static ZombieEntity findCompanion(
-        ServerPlayerEntity player
+            ServerPlayerEntity player
     ) {
 
         ServerWorld world =
-            player.getServerWorld();
+                (ServerWorld) player.getEntityWorld();
 
         for (ZombieEntity zombie :
-            world.getEntitiesByType(
-                EntityType.ZOMBIE,
-                entity ->
-                    entity.hasCustomName()
-                    &&
-                    entity.getCustomName() != null
-                    &&
-                    entity.getCustomName()
-                        .getString()
-                        .contains("AI Companion")
-            )
+                world.getEntitiesByType(
+                        EntityType.ZOMBIE,
+                        entity ->
+                                entity.hasCustomName()
+                                        &&
+                                entity.getCustomName() != null
+                                        &&
+                                entity.getCustomName()
+                                        .getString()
+                                        .contains("AI Companion")
+                )
         ) {
 
             UUID owner =
-                OWNERS.get(zombie.getUuid());
+                    OWNERS.get(
+                            zombie.getUuid()
+                    );
 
             if (
-                owner != null
-                &&
-                owner.equals(player.getUuid())
+                    owner != null
+                            &&
+                    owner.equals(
+                            player.getUuid()
+                    )
             ) {
+
                 return zombie;
             }
         }
@@ -611,94 +786,95 @@ public class AICompanion implements ModInitializer {
         return null;
     }
 
-    private static int removeCompanion(
-        ServerCommandSource source
-    ) {
-
-        ServerPlayerEntity player =
-            source.getPlayer();
-
-        if (player == null) {
-            return 0;
-        }
-
-        ZombieEntity companion =
-            findCompanion(player);
-
-        if (companion == null) {
-
-            source.sendError(
-                Text.literal(
-                    "§cNo AI Companion found."
-                )
-            );
-
-            return 0;
-        }
-
-        INVENTORIES.remove(
-            companion.getUuid()
-        );
-
-        OWNERS.remove(
-            companion.getUuid()
-        );
-
-        MODES.remove(
-            companion.getUuid()
-        );
-
-        companion.discard();
-
-        source.sendFeedback(
-            () -> Text.literal(
-                "§c[AI] §fCompanion removed."
-            ),
-            false
-        );
-
-        return 1;
-    }
-
     private static void buildPalace(
-        ZombieEntity companion,
-        ServerPlayerEntity player
+            ZombieEntity companion,
+            ServerPlayerEntity player
     ) {
 
         ServerWorld world =
-            (ServerWorld) companion.getEntityWorld();
+                (ServerWorld) companion.getEntityWorld();
 
         BlockPos center =
-            player.getBlockPos()
-                .add(0, 0, 6);
-
-        // First prototype:
-        // 15 x 15 foundation.
+                player.getBlockPos()
+                        .add(0, 0, 6);
 
         for (int x = -7; x <= 7; x++) {
 
             for (int z = -7; z <= 7; z++) {
 
                 BlockPos pos =
-                    center.add(x, 0, z);
+                        center.add(
+                                x,
+                                0,
+                                z
+                        );
 
                 if (
-                    world.getBlockState(pos)
-                        .isAir()
+                        world.getBlockState(pos)
+                                .isAir()
                 ) {
 
                     world.setBlockState(
-                        pos,
-                        Blocks.STONE_BRICKS
-                            .getDefaultState()
+                            pos,
+                            Blocks.STONE_BRICKS
+                                    .getDefaultState()
                     );
                 }
             }
         }
 
         MODES.put(
-            companion.getUuid(),
-            "follow"
+                companion.getUuid(),
+                "follow"
         );
+    }
+
+    private static int removeCompanion(
+            ServerCommandSource source
+    ) {
+
+        ServerPlayerEntity player =
+                source.getPlayer();
+
+        if (player == null) {
+            return 0;
+        }
+
+        ZombieEntity companion =
+                findCompanion(player);
+
+        if (companion == null) {
+
+            source.sendError(
+                    Text.literal(
+                            "§cNo AI Companion found."
+                    )
+            );
+
+            return 0;
+        }
+
+        INVENTORIES.remove(
+                companion.getUuid()
+        );
+
+        OWNERS.remove(
+                companion.getUuid()
+        );
+
+        MODES.remove(
+                companion.getUuid()
+        );
+
+        companion.discard();
+
+        source.sendFeedback(
+                () -> Text.literal(
+                        "§c[AI] §fCompanion removed."
+                ),
+                false
+        );
+
+        return 1;
     }
 }
