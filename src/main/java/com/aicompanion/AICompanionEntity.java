@@ -1,27 +1,30 @@
-
 package com.aicompanion;
+
+import java.util.UUID;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
 public class AICompanionEntity extends PathAwareEntity {
 
     private UUID ownerUuid;
 
-    public AICompanionEntity(EntityType<? extends AICompanionEntity> entityType, World world) {
+    public AICompanionEntity(
+            EntityType<? extends AICompanionEntity> entityType,
+            World world) {
         super(entityType, world);
     }
 
@@ -37,28 +40,41 @@ public class AICompanionEntity extends PathAwareEntity {
     @Override
     protected void initGoals() {
 
-        // Fight enemies
-        this.goalSelector.add(1, new MeleeAttackGoal(this, 1.2, true));
+        // Attack enemies
+        this.goalSelector.add(
+                1,
+                new MeleeAttackGoal(this, 1.2, true)
+        );
 
-        // Walk around when idle
-        this.goalSelector.add(6, new WanderAroundFarGoal(this, 1.0));
+        // Walk around
+        this.goalSelector.add(
+                6,
+                new WanderAroundFarGoal(this, 1.0)
+        );
 
-        // Look at nearby players
+        // Look at player
         this.goalSelector.add(
                 7,
-                new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)
+                new LookAtEntityGoal(
+                        this,
+                        PlayerEntity.class,
+                        8.0F
+                )
         );
 
         // Look around
-        this.goalSelector.add(8, new LookAroundGoal(this));
+        this.goalSelector.add(
+                8,
+                new LookAroundGoal(this)
+        );
 
-        // Revenge when attacked
+        // Fight back when attacked
         this.targetSelector.add(
                 1,
                 new RevengeGoal(this)
         );
 
-        // Attack hostile mobs
+        // Target hostile mobs
         this.targetSelector.add(
                 2,
                 new ActiveTargetGoal<>(
@@ -74,12 +90,12 @@ public class AICompanionEntity extends PathAwareEntity {
     }
 
     public UUID getOwnerUuid() {
-        return ownerUuid;
+        return this.ownerUuid;
     }
 
     public boolean isOwner(LivingEntity entity) {
-        return ownerUuid != null
-                && entity.getUuid().equals(ownerUuid);
+        return this.ownerUuid != null
+                && entity.getUuid().equals(this.ownerUuid);
     }
 
     @Override
